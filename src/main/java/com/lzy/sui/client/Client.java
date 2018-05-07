@@ -169,6 +169,7 @@ public class Client {
 		entity = new ProtocolEntity();
 		entity.setParams(params);
 		entity.setIdentityId("1");
+		entity.setSysUserName(System.getProperty("user.name"));
 		json = gson.toJson(entity);
 		bw.write(json);
 		bw.newLine();
