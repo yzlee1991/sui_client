@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Proxy;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -100,11 +101,16 @@ public class Client {
 					}
 				}
 			});
-		} catch (Exception e) {
+		}catch(ConnectException e){
+			System.out.println("连接失败："+e.getMessage());
+			throw new RuntimeException("连接服务器失败，失败信息："+e.getMessage());
+		}catch (Exception e) {
 			e.printStackTrace();
 			try {
-				socket.close();
-			} catch (IOException e1) {
+				if(socket!=null){
+					socket.close();
+				}
+			} catch (Exception e1) {
 				e1.printStackTrace();
 				System.out.println("关闭socket失败");
 			}
@@ -121,6 +127,9 @@ public class Client {
 	}
 
 	private void register() {
+		if(headFilter!=null){
+			return;
+		}
 		try {
 			String scanPath = this.getClass().getResource("").getPath() + "filter";
 			Filter filter = null;
