@@ -25,7 +25,7 @@ import com.lzy.sui.common.abs.Filter;
 import com.lzy.sui.common.inf.FileInf;
 import com.lzy.sui.common.infimpl.Observer;
 import com.lzy.sui.common.model.ProtocolEntity;
-import com.lzy.sui.common.proxy.RequestSocketHandle;
+import com.lzy.sui.common.proxy.CommonRequestSocketHandle;
 import com.lzy.sui.common.service.FileService;
 import com.lzy.sui.common.utils.CommonUtils;
 import com.lzy.sui.common.utils.MillisecondClock;
@@ -186,7 +186,7 @@ public class Client {
 		//获取登陆信息
 		json = br.readLine();
 		entity = gson.fromJson(json, ProtocolEntity.class);
-		if(ProtocolEntity.ReplyState.FAIL.equals(entity.getReplyState())){
+		if(ProtocolEntity.ReplyState.ERROR.equals(entity.getReplyState())){
 			throw new RuntimeException(entity.getReply());
 		}
 	}

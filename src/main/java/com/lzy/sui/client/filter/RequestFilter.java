@@ -9,7 +9,7 @@ import java.util.List;
 import com.lzy.sui.client.Client;
 import com.lzy.sui.common.abs.Filter;
 import com.lzy.sui.common.model.ProtocolEntity;
-import com.lzy.sui.common.proxy.RequestSocketHandle;
+import com.lzy.sui.common.proxy.CommonRequestSocketHandle;
 import com.lzy.sui.common.proxy.ResponseSocketHandle;
 import com.lzy.sui.common.utils.CommonUtils;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
@@ -19,7 +19,7 @@ public class RequestFilter extends Filter {
 	@Override
 	public void handle(ProtocolEntity entity) {
 		try {
-			if (ProtocolEntity.Type.REQUEST.equals(entity.getType())) {
+			if (ProtocolEntity.Type.COMMONREQUEST.equals(entity.getType())) {
 				System.out.println("RequestFilter  handling  " + entity);
 				List<String> base64Params = entity.getParams();
 				// 还原参数对象
