@@ -40,7 +40,7 @@ public class LoginController {
 			stage.setResizable(true);
 			
 //			HostInf inf=(HostInf) RmiClient.lookup(Client.newInstance().getSocket(), HostInf.class.getName());
-//			inf.a(123);
+//			System.out.println(inf.a(123));
 			CommonRequestSocketHandle h=new CommonRequestSocketHandle(Client.newInstance().getSocket(),new FileService() , "1", ProtocolEntity.TARGER_SERVER, ProtocolEntity.Mode.INVOKE);
 			FileInf f=	(FileInf) Proxy.newProxyInstance(FileService.class.getClassLoader(), FileService.class.getInterfaces(), h);
 			System.out.println(f.show("12312"));

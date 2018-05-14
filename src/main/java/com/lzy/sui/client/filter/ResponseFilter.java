@@ -14,9 +14,11 @@ public class ResponseFilter extends Filter {
 		try {
 			if (ProtocolEntity.Type.RESPONSE.equals(entity.getType())) {
 				System.out.println("ResponseFilter  handling " + entity);
-				Conversation.MAP.put(entity.getConversationId(), entity);
-				synchronized (entity.getConversationId()) {
-					entity.getConversationId().notify();
+				Conversation.Data data=Conversation.MAP.get(entity.getConversationId());
+				data.setEntity(entity);
+				String lock=data.getLock();
+				synchronized (lock) {
+					lock.notify();
 				}
 			} else {
 				if (this.filter != null) {
