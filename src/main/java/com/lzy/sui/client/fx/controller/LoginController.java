@@ -39,11 +39,11 @@ public class LoginController {
 			stage.setScene(new Scene(home));
 			stage.setResizable(true);
 			
-//			HostInf inf=(HostInf) RmiClient.lookup(Client.newInstance().getSocket(), HostInf.class.getName());
-//			System.out.println(inf.a(123));
-			CommonRequestSocketHandle h=new CommonRequestSocketHandle(Client.newInstance().getSocket(),new FileService() , "1", ProtocolEntity.TARGER_SERVER, ProtocolEntity.Mode.INVOKE);
-			FileInf f=	(FileInf) Proxy.newProxyInstance(FileService.class.getClassLoader(), FileService.class.getInterfaces(), h);
-			System.out.println(f.show("12312"));
+			HostInf inf=(HostInf) RmiClient.lookup(Client.newInstance().getSocket(), HostInf.class.getName());
+			System.out.println(inf.a(123));
+//			CommonRequestSocketHandle h=new CommonRequestSocketHandle(Client.newInstance().getSocket(),new FileService() , "1", ProtocolEntity.TARGER_SERVER, ProtocolEntity.Mode.INVOKE);
+//			FileInf f=	(FileInf) Proxy.newProxyInstance(FileService.class.getClassLoader(), FileService.class.getInterfaces(), h);
+//			System.out.println(f.show("12312"));
 			
 		}catch(Exception e){
 			e.printStackTrace();

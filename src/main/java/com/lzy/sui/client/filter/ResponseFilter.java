@@ -15,6 +15,10 @@ public class ResponseFilter extends Filter {
 			if (ProtocolEntity.Type.RESPONSE.equals(entity.getType())) {
 				System.out.println("ResponseFilter  handling " + entity);
 				Conversation.Data data=Conversation.MAP.get(entity.getConversationId());
+				if(data==null){
+					System.out.println("收到过期的回复"+entity);
+					return;
+				}
 				data.setEntity(entity);
 				String lock=data.getLock();
 				synchronized (lock) {

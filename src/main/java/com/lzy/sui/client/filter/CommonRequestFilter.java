@@ -14,7 +14,7 @@ import com.lzy.sui.common.proxy.ResponseSocketHandle;
 import com.lzy.sui.common.utils.CommonUtils;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 
-public class RequestFilter extends Filter {
+public class CommonRequestFilter extends Filter {
 
 	@Override
 	public void handle(ProtocolEntity entity) {
@@ -33,7 +33,7 @@ public class RequestFilter extends Filter {
 				ClassLoader loader = Thread.currentThread().getContextClassLoader();
 				Object target = Class.forName(entity.getClassName()).newInstance();
 				ResponseSocketHandle handle = new ResponseSocketHandle(Client.newInstance().getSocket(), target,
-						entity.getTargetId(), entity.getIdentityId(), entity.getMode());
+						entity.getIdentityId());
 				handle.setConversationId(entity.getConversationId());
 				Object proxy = Proxy.newProxyInstance(target.getClass().getClassLoader(),
 						target.getClass().getInterfaces(), handle);
