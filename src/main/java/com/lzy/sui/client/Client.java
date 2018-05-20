@@ -101,13 +101,13 @@ public class Client {
 					}
 				}
 			});
-		}catch(ConnectException e){
-			System.out.println("连接失败："+e.getMessage());
-			throw new RuntimeException("连接服务器失败，失败信息："+e.getMessage());
-		}catch (Exception e) {
+		} catch (ConnectException e) {
+			System.out.println("连接失败：" + e.getMessage());
+			throw new RuntimeException("连接服务器失败，失败信息：" + e.getMessage());
+		} catch (Exception e) {
 			e.printStackTrace();
 			try {
-				if(socket!=null){
+				if (socket != null) {
 					socket.close();
 				}
 			} catch (Exception e1) {
@@ -127,7 +127,7 @@ public class Client {
 	}
 
 	private void register() {
-		if(headFilter!=null){
+		if (headFilter != null) {
 			return;
 		}
 		try {
@@ -160,6 +160,7 @@ public class Client {
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 		ProtocolEntity entity = new ProtocolEntity();
 		entity.setIdentity(ProtocolEntity.Identity.USER);
+		entity.setSysUserName(System.getProperty("user.name"));
 		String json = gson.toJson(entity);
 		bw.write(json);
 		bw.newLine();
@@ -177,16 +178,14 @@ public class Client {
 		params.add(encodePassWord);
 		entity = new ProtocolEntity();
 		entity.setParams(params);
-		entity.setIdentityId("1");
-		entity.setSysUserName(System.getProperty("user.name"));
 		json = gson.toJson(entity);
 		bw.write(json);
 		bw.newLine();
 		bw.flush();
-		//获取登陆信息
+		// 获取登陆信息
 		json = br.readLine();
 		entity = gson.fromJson(json, ProtocolEntity.class);
-		if(ProtocolEntity.ReplyState.ERROR.equals(entity.getReplyState())){
+		if (ProtocolEntity.ReplyState.ERROR.equals(entity.getReplyState())) {
 			throw new RuntimeException(entity.getReply());
 		}
 	}
@@ -224,6 +223,22 @@ public class Client {
 
 	public void setSocket(Socket socket) {
 		this.socket = socket;
+	}
+
+	public Filter getHeadFilter() {
+		return headFilter;
+	}
+
+	public void setHeadFilter(Filter headFilter) {
+		this.headFilter = headFilter;
+	}
+
+	public ExecutorService getCachedThreadPool() {
+		return cachedThreadPool;
+	}
+
+	public void setCachedThreadPool(ExecutorService cachedThreadPool) {
+		this.cachedThreadPool = cachedThreadPool;
 	}
 
 }

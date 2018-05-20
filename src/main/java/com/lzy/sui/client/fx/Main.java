@@ -17,6 +17,7 @@ public class Main extends Application{
 		primaryStage.setScene(scene);
 		primaryStage.getIcons().add(new Image(getClass().getResource("/image/meunicon.png").toURI().toString()));
 		primaryStage.setResizable(false);
+		primaryStage.setTitle("随小僵客户端");
 		primaryStage.show();
 	}
 	

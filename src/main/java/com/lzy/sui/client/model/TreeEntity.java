@@ -1,31 +1,29 @@
 package com.lzy.sui.client.model;
 
+import com.lzy.sui.common.model.ProtocolEntity;
+
 /**
  * author :lzy date :2018年5月8日下午4:12:14
  */
 
 public class TreeEntity {
 
-	public enum Identity {
-		USER, CORPSE
+	public enum TYPE {
+		ROOT, HOST, DISK, DIRECTORY, FILE,
 	}
 
-	private enum TYPE {
-		HOST, DISK, DIRECTORY, FILE,
-	}
-
-	private Identity identity;
+	private ProtocolEntity.Identity identity;
 	private String identityId;
 	private String name;
 	private long fileSize;
 	private String filePath;
 	private TYPE type;
 
-	public Identity getIdentity() {
+	public ProtocolEntity.Identity getIdentity() {
 		return identity;
 	}
 
-	public void setIdentity(Identity identity) {
+	public void setIdentity(ProtocolEntity.Identity identity) {
 		this.identity = identity;
 	}
 
