@@ -14,7 +14,7 @@ import com.google.gson.Gson;
 import com.lzy.sui.client.Client;
 import com.lzy.sui.client.filter.PushFilter;
 import com.lzy.sui.client.listener.Listener;
-import com.lzy.sui.client.model.TableEntity;
+import com.lzy.sui.client.model.TableTask;
 import com.lzy.sui.client.model.TreeEntity;
 import com.lzy.sui.client.model.TreeEntity.TYPE;
 import com.lzy.sui.common.abs.Filter;
@@ -28,16 +28,21 @@ import com.lzy.sui.common.model.push.PushEvent;
 import com.lzy.sui.common.proxy.CommonRequestSocketHandle;
 import com.lzy.sui.common.service.FileService;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.cell.ProgressBarTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -80,18 +85,21 @@ public class HomeController implements Initializable {
 	private TreeView<TreeEntity> tree;
 
 	@FXML
-	private TableView<TableEntity> table;
+	private TableView<TableTask> table;
 	@FXML
-	private TableColumn<TableEntity,String> src;
+	private TableColumn<TableTask, String> src;
 	@FXML
-	private TableColumn<TableEntity,String> fileName;
+	private TableColumn<TableTask, String> fileName;
 	@FXML
-	private TableColumn<TableEntity,String> download;
-	
+	private TableColumn<TableTask, Double> download;
+	@FXML
+	private TableColumn<TableTask, String> status;
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		System.out.println("HomeController 初始化。。。。。");
 		initTree();
+		initTable();
 		registerPushListener();
 	}
 
@@ -168,7 +176,6 @@ public class HomeController implements Initializable {
 
 				// 点击事件
 				menuItem.setOnAction(param -> {
-
 					if (selectEntity.getType() == TreeEntity.TYPE.HOST) {// 点击主机加载系统盘
 						CommonRequestSocketHandle h = new CommonRequestSocketHandle(Client.newInstance().getSocket(),
 								new FileService(), selectEntity.getIdentityId());
@@ -198,7 +205,12 @@ public class HomeController implements Initializable {
 						selectItem.getChildren().clear();
 						selectItem.getChildren().addAll(itemList);
 					} else if (selectEntity.getType() == TreeEntity.TYPE.FILE) {// 下载文件
-						// 之后添加基础下载路径检测
+						TreeItem<TreeEntity> hostItem=selectItem;
+						do{
+							hostItem=hostItem.getParent();
+						}while(hostItem.getValue().getType()!=TreeEntity.TYPE.HOST);
+						
+						// 之后添加基础下载路径检测以及断点续传
 						FileChooser chooser = new FileChooser();
 						chooser.setTitle("下载文件到");
 						chooser.setInitialFileName(selectEntity.getName());
@@ -207,26 +219,45 @@ public class HomeController implements Initializable {
 							return;
 						}
 
-						CommonRequestSocketHandle h = new CommonRequestSocketHandle(Client.newInstance().getSocket(),
-								new FileService(), selectEntity.getIdentityId());
-						FileInf inf = (FileInf) Proxy.newProxyInstance(FileService.class.getClassLoader(),
-								FileService.class.getInterfaces(), h);
-						long blockSize = 1024 * 1024;// 之后改成可配置块大小
-						long blockCount = selectEntity.getFileSize() / blockSize;
-						blockCount = blockCount % blockSize == 0 ? blockCount : blockCount + 1;
+						TableTask tt = new TableTask() {
 
-						try {
-							BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file, true));
-							for (int i = 1; i <= blockCount; i++) {
-								byte[] bytes = inf.getFilePart(selectEntity.getFilePath(), (int) blockSize, i);// 方法不合理
-								bos.write(bytes);
+							@Override
+							protected Void call() throws Exception {
+								updateMessage("准备下载");
+								CommonRequestSocketHandle h = new CommonRequestSocketHandle(
+										Client.newInstance().getSocket(), new FileService(),
+										selectEntity.getIdentityId());
+								FileInf inf = (FileInf) Proxy.newProxyInstance(FileService.class.getClassLoader(),
+										FileService.class.getInterfaces(), h);
+								long blockSize = 1024 * 1024;// 之后改成可配置块大小
+								long blockCount = selectEntity.getFileSize() / blockSize;
+								blockCount = blockCount % blockSize == 0 ? blockCount : blockCount + 1;
+
+								try {
+									BufferedOutputStream bos = new BufferedOutputStream(
+											new FileOutputStream(file, false));
+									for (int i = 1; i <= blockCount; i++) {
+										updateMessage("下载中..."+i+"/"+blockCount);
+										byte[] bytes = inf.getFilePart(selectEntity.getFilePath(), (int) blockSize, i);// 强转方法不合理
+										bos.write(bytes);
+										updateProgress(i, blockCount);
+									}
+									updateMessage("下载完成");
+									bos.flush();
+									bos.close();
+								} catch (Exception e1) {
+									e1.printStackTrace();
+								}
+
+								return null;
 							}
-							bos.flush();
-							bos.close();
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
 
+						};
+						tt.setSrc(hostItem.getValue().getName());
+						tt.setFileName(selectEntity.getName());
+						table.getItems().add(tt);
+						
+						Client.newInstance().getCachedThreadPool().execute(tt);
 					}
 
 				});
@@ -237,10 +268,15 @@ public class HomeController implements Initializable {
 		});
 	}
 
-	private void initTable(){
-		
+	private void initTable() {
+		src.setCellValueFactory(new PropertyValueFactory<TableTask, String>("src"));
+		fileName.setCellValueFactory(new PropertyValueFactory<TableTask, String>("fileName"));
+		download.setCellValueFactory(new PropertyValueFactory<TableTask, Double>("progress"));
+		download.setCellFactory(ProgressBarTableCell.<TableTask> forTableColumn());
+		status.setCellValueFactory(new PropertyValueFactory<TableTask, String>("message"));
+
 	}
-	
+
 	// 添加推送监听
 	private void registerPushListener() {
 		Filter filter = Client.newInstance().getHeadFilter();
@@ -342,5 +378,5 @@ public class HomeController implements Initializable {
 
 		return treeItem;
 	}
-	
+
 }

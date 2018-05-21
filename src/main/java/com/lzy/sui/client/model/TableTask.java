@@ -1,12 +1,12 @@
 package com.lzy.sui.client.model;
 
-public class TableEntity {
+import javafx.concurrent.Task;
+
+public abstract class TableTask extends Task<Void>{
 
 	private String src;
 
 	private String fileName;
-
-	private double progress;
 
 	public String getSrc() {
 		return src;
@@ -23,13 +23,4 @@ public class TableEntity {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
-
-	public double getProgress() {
-		return progress;
-	}
-
-	public void setProgress(double progress) {
-		this.progress = progress;
-	}
-
 }
