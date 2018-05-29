@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
 
 import com.google.gson.Gson;
 import com.lzy.sui.client.Client;
@@ -205,11 +206,11 @@ public class HomeController implements Initializable {
 						selectItem.getChildren().clear();
 						selectItem.getChildren().addAll(itemList);
 					} else if (selectEntity.getType() == TreeEntity.TYPE.FILE) {// 下载文件
-						TreeItem<TreeEntity> hostItem=selectItem;
-						do{
-							hostItem=hostItem.getParent();
-						}while(hostItem.getValue().getType()!=TreeEntity.TYPE.HOST);
-						
+						TreeItem<TreeEntity> hostItem = selectItem;
+						do {
+							hostItem = hostItem.getParent();
+						} while (hostItem.getValue().getType() != TreeEntity.TYPE.HOST);
+
 						// 之后添加基础下载路径检测以及断点续传
 						FileChooser chooser = new FileChooser();
 						chooser.setTitle("下载文件到");
@@ -231,32 +232,34 @@ public class HomeController implements Initializable {
 										FileService.class.getInterfaces(), h);
 								long blockSize = 1024 * 1024;// 之后改成可配置块大小
 								long blockCount = selectEntity.getFileSize() / blockSize;
-								blockCount = blockCount % blockSize == 0 ? blockCount : blockCount + 1;
+								blockCount = selectEntity.getFileSize() % blockSize == 0 ? blockCount : blockCount + 1;
 
-								try {
-									BufferedOutputStream bos = new BufferedOutputStream(
-											new FileOutputStream(file, false));
-									for (int i = 1; i <= blockCount; i++) {
-										updateMessage("下载中..."+i+"/"+blockCount);
-										byte[] bytes = inf.getFilePart(selectEntity.getFilePath(), (int) blockSize, i);// 强转方法不合理
-										bos.write(bytes);
-										updateProgress(i, blockCount);
-									}
-									updateMessage("下载完成");
-									bos.flush();
-									bos.close();
-								} catch (Exception e1) {
-									e1.printStackTrace();
+								BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file, false));
+								for (int i = 1; i <= blockCount; i++) {
+									updateMessage("下载中..." + i + "/" + blockCount);
+									byte[] bytes = inf.getFilePart(selectEntity.getFilePath(), (int) blockSize, i);// 强转方法不合理
+									bos.write(bytes);
+									updateProgress(i, blockCount);
 								}
+								updateMessage("下载完成");
+								bos.flush();
+								bos.close();
 
 								return null;
+							}
+
+							@Override
+							protected void failed() {
+								super.failed();
+								System.out.println("下载异常：" + getException());
+								updateMessage("下载失败");
 							}
 
 						};
 						tt.setSrc(hostItem.getValue().getName());
 						tt.setFileName(selectEntity.getName());
 						table.getItems().add(tt);
-						
+
 						Client.newInstance().getCachedThreadPool().execute(tt);
 					}
 
@@ -321,40 +324,46 @@ public class HomeController implements Initializable {
 					}
 				});
 
-				// 后续实现
-				// pushFilter.register(new Listener() {
-				// @Override
-				// public void action(PushEvent event) {
-				// if (event instanceof HostOutlineEvent) {// 主机下线监听
-				// HostEntity entity = gson.fromJson(event.getJson(),
-				// HostEntity.class);
-				// TreeEntity treeEntity = new TreeEntity();
-				// treeEntity.setName(entity.getName());
-				// treeEntity.setIdentityId(entity.getIdentityId());
-				// treeEntity.setIdentity(entity.getIdentity());
-				//
-				// Client.newInstance().getCachedThreadPool().execute(new
-				// Task<Object>() {
-				// @Override
-				// protected Object call() throws Exception {
-				// return null;
-				// }
-				//
-				// @Override
-				// protected void succeeded() {
-				// super.succeeded();
-				// TreeItem<TreeEntity> root = tree.getRoot();
-				// for (TreeItem<TreeEntity> item : root.getChildren()) {
-				// TreeEntity he = item.getValue();
-				// if (he.getIdentityId().equals(entity.getIdentityId())) {
-				// root.getChildren().remove(item);
-				// }
-				// }
-				// }
-				// });
-				// }
-				// }
-				// });
+				pushFilter.register(new Listener() {
+					@Override
+					public void action(PushEvent event) {
+						if (event instanceof HostOutlineEvent) {// 主机下线监听
+							HostEntity entity = gson.fromJson(event.getJson(), HostEntity.class);
+							String identityId = entity.getIdentityId();
+
+							Client.newInstance().getCachedThreadPool().execute(new Task<TreeItem<TreeEntity>>() {
+								@Override
+								protected TreeItem<TreeEntity> call() throws Exception {
+									TreeItem<TreeEntity> root = tree.getRoot();
+									ObservableList<TreeItem<TreeEntity>> hostList = root.getChildren();
+									for (TreeItem<TreeEntity> host : hostList) {
+										TreeEntity treeEntity = host.getValue();
+										if (treeEntity.getIdentityId().equals(identityId)) {
+											return host;
+										}
+
+									}
+									return null;
+								}
+
+								@Override
+								protected void succeeded() {
+									super.succeeded();
+									TreeItem<TreeEntity> outLineHost;
+									try {
+										outLineHost = get();
+										if (outLineHost != null) {
+											tree.getRoot().getChildren().remove(outLineHost);
+										}
+									} catch (InterruptedException | ExecutionException e) {
+										System.out.println("下线推送异常");
+										e.printStackTrace();
+									}
+								}
+							});
+						}
+					}
+				});
 				return;
 			}
 		}

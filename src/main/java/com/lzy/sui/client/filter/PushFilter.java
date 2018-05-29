@@ -11,17 +11,17 @@ import com.lzy.sui.common.utils.CommonUtils;
 import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 
-public class PushFilter extends Filter{
+public class PushFilter extends Filter {
 
-	private List<Listener> list=new ArrayList<Listener>();
-	
+	private List<Listener> list = new ArrayList<Listener>();
+
 	@Override
 	public void handle(ProtocolEntity entity) {
 		if (ProtocolEntity.Type.PUSH.equals(entity.getType())) {
 			System.out.println("PushFilter  handling " + entity);
 			try {
-				byte[] bytes=Base64.decode(entity.getReply());
-				PushEvent event=(PushEvent) CommonUtils.byteArraytoObject(bytes);
+				byte[] bytes = Base64.decode(entity.getReply());
+				PushEvent event = (PushEvent) CommonUtils.byteArraytoObject(bytes);
 				notifyListener(event);
 			} catch (Base64DecodingException e) {
 				e.printStackTrace();
@@ -35,18 +35,18 @@ public class PushFilter extends Filter{
 		}
 	}
 
-	public void register(Listener listener){
+	public void register(Listener listener) {
 		list.add(listener);
 	}
-	
-	public void remove(Listener listener){
+
+	public void remove(Listener listener) {
 		list.remove(listener);
 	}
-	
-	public void notifyListener(PushEvent event){
-		for(Listener listener:list){
+
+	public void notifyListener(PushEvent event) {
+		for (Listener listener : list) {
 			listener.action(event);
 		}
 	}
-	
+
 }

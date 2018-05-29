@@ -1,5 +1,7 @@
 package com.lzy.sui.client.fx;
 
+import com.lzy.sui.client.Client;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -18,6 +20,10 @@ public class Main extends Application{
 		primaryStage.getIcons().add(new Image(getClass().getResource("/image/meunicon.png").toURI().toString()));
 		primaryStage.setResizable(false);
 		primaryStage.setTitle("随小僵客户端");
+		primaryStage.setOnCloseRequest(event->{
+			//后续添加下线通知
+			System.out.println("关闭"+Client.newInstance().getSocket().isClosed());
+		});
 		primaryStage.show();
 	}
 	
