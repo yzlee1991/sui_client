@@ -29,9 +29,9 @@ public class Main extends Application {
 		primaryStage.getIcons().add(new Image(getClass().getResource("/image/meunicon.png").toURI().toString()));
 		primaryStage.setResizable(false);
 		primaryStage.setTitle("随小僵客户端");
+		//退出监听
 		primaryStage.setOnCloseRequest(event -> {
-			// 后续添加下线通知
-			System.out.println("关闭" + Client.newInstance().getSocket().isClosed());
+			Client.newInstance().exit();
 		});
 		primaryStage.show();
 	}

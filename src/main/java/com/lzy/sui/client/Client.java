@@ -118,6 +118,22 @@ public class Client {
 		}
 
 	}
+	
+	public void exit(){
+		try {
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			ProtocolEntity entity = new ProtocolEntity();
+			entity.setType(ProtocolEntity.Type.EXIT);
+			String json=gson.toJson(entity);
+			bw.write(json);
+			bw.newLine();
+			bw.flush();
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("客户端退出异常："+e.getMessage());
+		}
+	}
 
 	// 初始化
 	public void init() {
