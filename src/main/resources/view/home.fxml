@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lzy.sui.client.fx.controller.HomeController">
    <children>
-      <HBox layoutX="166.0" layoutY="134.0" prefHeight="100.0" prefWidth="200.0" spacing="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
-         <children>
-            <VBox prefWidth="220.0">
+      <SplitPane dividerPositions="0.3" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <items>
+            <VBox SplitPane.resizableWithParent="false">
                <children>
-                  <TreeView fx:id="tree" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                  <TreeView fx:id="tree" prefHeight="398.0" prefWidth="209.0" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
-            <TableView fx:id="table" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
-              <columns>
-                <TableColumn fx:id="src" prefWidth="75.0" text="源端" />
+            <TableView fx:id="table" SplitPane.resizableWithParent="false">
+               <columns>
+                  <TableColumn fx:id="src" prefWidth="75.0" text="源端" />
                   <TableColumn fx:id="fileName" prefWidth="75.0" text="文件名" />
-                <TableColumn fx:id="download" prefWidth="75.0" text="下载进度" />
+                  <TableColumn fx:id="download" prefWidth="75.0" text="下载进度" />
                   <TableColumn fx:id="status" prefWidth="75.0" text="下载状态" />
-              </columns>
+               </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                </columnResizePolicy>
             </TableView>
-         </children>
-      </HBox>
+         </items>
+      </SplitPane>
    </children>
 </AnchorPane>

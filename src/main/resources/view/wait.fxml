@@ -4,8 +4,7 @@
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.layout.VBox?>
 
-
-<VBox alignment="CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+<VBox alignment="CENTER" spacing="10.0" style="-fx-background-color: rgba(255,255,255,0.5);" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Label fx:id="title" text="Label" />
       <ProgressIndicator />
