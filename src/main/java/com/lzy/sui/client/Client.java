@@ -121,6 +121,9 @@ public class Client {
 	
 	public void exit(){
 		try {
+			if(socket==null){
+				return;
+			}
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			ProtocolEntity entity = new ProtocolEntity();
 			entity.setType(ProtocolEntity.Type.EXIT);

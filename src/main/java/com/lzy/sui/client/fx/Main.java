@@ -2,6 +2,9 @@ package com.lzy.sui.client.fx;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.lzy.sui.client.Client;
 
 import javafx.application.Application;
@@ -17,6 +20,8 @@ import javafx.stage.StageStyle;
 
 public class Main extends Application {
 
+	Logger logger = LoggerFactory.getLogger(Main.class);
+	
 	private static Stage primaryStage;
 
 	@Override

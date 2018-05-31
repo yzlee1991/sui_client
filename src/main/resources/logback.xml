@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<!-- 输出到控制台 -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} -
+				%msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+		<file>client.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} -
+				%msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<!-- 日志输出级别 -->
+	<root level="INFO,ERROR">
+		<appender-ref ref="FILE" />
+	</root>
+	<logger name="org.springframework" level="INFO" />
+	<logger name="org.apache.coyote.http11.Http11InputBuffer" level="DEBUG" />
+	<logger name="springfox" level="INFO" />
+	<logger name="org.apache.http" level="INFO" />
+	<logger name="org.springframework.core.env" level="INFO" />
+	<logger name="org.apache.zookeeper" level="INFO" />
+	<logger name="org.I0Itec.zkclient" level="INFO" />
+	<logger name="org.apache.commons.beanutils" level="WARN" />
+	<logger name="org.eclipse" level="INFO" />
+	<logger name="com.netflix.discovery" level="INFO" />
+	<logger name="de.codecentric.boot" level="INFO" />
+</configuration>
