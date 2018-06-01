@@ -44,8 +44,6 @@ public class Client {
 		return thread;
 	});
 
-	private ConcurrentMap<String, Object> conversationMap = new ConcurrentHashMap<String, Object>();
-
 	final private MillisecondClock clock = new MillisecondClock(cachedThreadPool);
 
 	private Filter headFilter = null;
@@ -55,8 +53,6 @@ public class Client {
 	private long headTime = 1500;
 
 	private long lastTime = clock.now();
-
-//	private Gson gson = new Gson();
 
 	private String sysUserName = System.getProperty("user.name");
 
@@ -84,8 +80,6 @@ public class Client {
 		try {
 			// 1.连接服务器请求登陆
 			socket = new Socket("127.0.0.1", 12345);
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			// 2.登陆
 			login(socket, userName, passWord);
 			// 3.登陆成功后发送心跳包（之后可以改成定时器的第三方类，看情况）
@@ -94,8 +88,7 @@ public class Client {
 			cachedThreadPool.execute(() -> {
 				while (true) {
 					try {
-						String json = br.readLine();
-						ProtocolEntity entity = CommonUtils.gson.fromJson(json, ProtocolEntity.class);
+						ProtocolEntity entity=SocketUtils.receive(socket);
 						headFilter.handle(entity);
 					} catch (Exception e) {
 						// Platform.exit();
@@ -125,13 +118,8 @@ public class Client {
 			if(socket==null){
 				return;
 			}
-//			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			ProtocolEntity entity = new ProtocolEntity();
 			entity.setType(ProtocolEntity.Type.EXIT);
-//			String json=gson.toJson(entity);
-//			bw.write(json);
-//			bw.newLine();
-//			bw.flush();
 			SocketUtils.send(socket, entity);
 			socket.close();
 		} catch (IOException e) {
@@ -177,19 +165,12 @@ public class Client {
 	}
 
 	private void login(Socket socket, String userName, String passWord) throws Exception {
-		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 		ProtocolEntity entity = new ProtocolEntity();
 		entity.setIdentity(ProtocolEntity.Identity.USER);
 		entity.setSysUserName(System.getProperty("user.name"));
-//		String json = gson.toJson(entity);
-//		bw.write(json);
-//		bw.newLine();
-//		bw.flush();
 		SocketUtils.send(socket, entity);
 		// 2.获取公钥发送用户名密码
-		String json = br.readLine();
-		entity = CommonUtils.gson.fromJson(json, ProtocolEntity.class);
+		entity=SocketUtils.receive(socket);
 		String base64PublicKey = entity.getReply();
 		byte[] bytes = Base64.decode(base64PublicKey);
 		PublicKey publicKey = (PublicKey) CommonUtils.byteArraytoObject(bytes);
@@ -200,14 +181,9 @@ public class Client {
 		params.add(encodePassWord);
 		entity = new ProtocolEntity();
 		entity.setParams(params);
-//		json = gson.toJson(entity);
-//		bw.write(json);
-//		bw.newLine();
-//		bw.flush();
 		SocketUtils.send(socket, entity);
 		// 获取登陆信息
-		json = br.readLine();
-		entity = CommonUtils.gson.fromJson(json, ProtocolEntity.class);
+		entity=SocketUtils.receive(socket);
 		if (ProtocolEntity.ReplyState.ERROR.equals(entity.getReplyState())) {
 			throw new RuntimeException(entity.getReply());
 		}
@@ -217,7 +193,6 @@ public class Client {
 		System.out.println("开启心跳");
 		cachedThreadPool.execute(() -> {
 			try {
-//				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 				while (true) {
 					long currentTime = clock.now();
 					if ((currentTime - lastTime) < headTime) {
@@ -228,10 +203,6 @@ public class Client {
 					heartBeatEntity.setType(ProtocolEntity.Type.HEARTBEAT);
 					heartBeatEntity.setIdentity(ProtocolEntity.Identity.USER);
 					heartBeatEntity.setSysUserName(sysUserName);
-//					String heartBeatjson = gson.toJson(heartBeatEntity);
-//					bw.write(heartBeatjson);
-//					bw.newLine();
-//					bw.flush();
 					SocketUtils.send(socket, heartBeatEntity);
 					lastTime = currentTime;
 				}
