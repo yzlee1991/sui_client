@@ -30,6 +30,7 @@ import com.lzy.sui.common.service.FileService;
 import com.lzy.sui.common.utils.CommonUtils;
 import com.lzy.sui.common.utils.MillisecondClock;
 import com.lzy.sui.common.utils.RSAUtils;
+import com.lzy.sui.common.utils.SocketUtils;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import javafx.application.Platform;
@@ -55,7 +56,7 @@ public class Client {
 
 	private long lastTime = clock.now();
 
-	private Gson gson = new Gson();
+//	private Gson gson = new Gson();
 
 	private String sysUserName = System.getProperty("user.name");
 
@@ -94,7 +95,7 @@ public class Client {
 				while (true) {
 					try {
 						String json = br.readLine();
-						ProtocolEntity entity = gson.fromJson(json, ProtocolEntity.class);
+						ProtocolEntity entity = CommonUtils.gson.fromJson(json, ProtocolEntity.class);
 						headFilter.handle(entity);
 					} catch (Exception e) {
 						// Platform.exit();
@@ -124,13 +125,14 @@ public class Client {
 			if(socket==null){
 				return;
 			}
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+//			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			ProtocolEntity entity = new ProtocolEntity();
 			entity.setType(ProtocolEntity.Type.EXIT);
-			String json=gson.toJson(entity);
-			bw.write(json);
-			bw.newLine();
-			bw.flush();
+//			String json=gson.toJson(entity);
+//			bw.write(json);
+//			bw.newLine();
+//			bw.flush();
+			SocketUtils.send(socket, entity);
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -176,17 +178,18 @@ public class Client {
 
 	private void login(Socket socket, String userName, String passWord) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+//		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 		ProtocolEntity entity = new ProtocolEntity();
 		entity.setIdentity(ProtocolEntity.Identity.USER);
 		entity.setSysUserName(System.getProperty("user.name"));
-		String json = gson.toJson(entity);
-		bw.write(json);
-		bw.newLine();
-		bw.flush();
+//		String json = gson.toJson(entity);
+//		bw.write(json);
+//		bw.newLine();
+//		bw.flush();
+		SocketUtils.send(socket, entity);
 		// 2.获取公钥发送用户名密码
-		json = br.readLine();
-		entity = gson.fromJson(json, ProtocolEntity.class);
+		String json = br.readLine();
+		entity = CommonUtils.gson.fromJson(json, ProtocolEntity.class);
 		String base64PublicKey = entity.getReply();
 		byte[] bytes = Base64.decode(base64PublicKey);
 		PublicKey publicKey = (PublicKey) CommonUtils.byteArraytoObject(bytes);
@@ -197,13 +200,14 @@ public class Client {
 		params.add(encodePassWord);
 		entity = new ProtocolEntity();
 		entity.setParams(params);
-		json = gson.toJson(entity);
-		bw.write(json);
-		bw.newLine();
-		bw.flush();
+//		json = gson.toJson(entity);
+//		bw.write(json);
+//		bw.newLine();
+//		bw.flush();
+		SocketUtils.send(socket, entity);
 		// 获取登陆信息
 		json = br.readLine();
-		entity = gson.fromJson(json, ProtocolEntity.class);
+		entity = CommonUtils.gson.fromJson(json, ProtocolEntity.class);
 		if (ProtocolEntity.ReplyState.ERROR.equals(entity.getReplyState())) {
 			throw new RuntimeException(entity.getReply());
 		}
@@ -213,7 +217,7 @@ public class Client {
 		System.out.println("开启心跳");
 		cachedThreadPool.execute(() -> {
 			try {
-				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+//				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 				while (true) {
 					long currentTime = clock.now();
 					if ((currentTime - lastTime) < headTime) {
@@ -224,10 +228,11 @@ public class Client {
 					heartBeatEntity.setType(ProtocolEntity.Type.HEARTBEAT);
 					heartBeatEntity.setIdentity(ProtocolEntity.Identity.USER);
 					heartBeatEntity.setSysUserName(sysUserName);
-					String heartBeatjson = gson.toJson(heartBeatEntity);
-					bw.write(heartBeatjson);
-					bw.newLine();
-					bw.flush();
+//					String heartBeatjson = gson.toJson(heartBeatEntity);
+//					bw.write(heartBeatjson);
+//					bw.newLine();
+//					bw.flush();
+					SocketUtils.send(socket, heartBeatEntity);
 					lastTime = currentTime;
 				}
 			} catch (Exception e) {
