@@ -2,12 +2,14 @@ package com.lzy.sui.client.fx.controller;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
+import java.util.List;
 
 import com.lzy.sui.client.Client;
 import com.lzy.sui.client.fx.Main;
 import com.lzy.sui.common.inf.FileInf;
 import com.lzy.sui.common.inf.HostInf;
 import com.lzy.sui.common.model.ProtocolEntity;
+import com.lzy.sui.common.model.push.HostEntity;
 import com.lzy.sui.common.proxy.CommonRequestSocketHandle;
 import com.lzy.sui.common.rmi.RmiClient;
 import com.lzy.sui.common.service.FileService;
@@ -77,6 +79,8 @@ public class LoginController {
 			});
 			
 //			HostInf inf=(HostInf) RmiClient.lookup(Client.newInstance().getSocket(), HostInf.class.getName());
+//			List<HostEntity> list=inf.getOnlineHostEntity();
+//			System.out.println("--->>"+list.size());
 //			System.out.println(inf.a(123));
 //			CommonRequestSocketHandle h=new CommonRequestSocketHandle(Client.newInstance().getSocket(),new FileService() , "1", ProtocolEntity.TARGER_SERVER, ProtocolEntity.Mode.INVOKE);
 //			FileInf f=	(FileInf) Proxy.newProxyInstance(FileService.class.getClassLoader(), FileService.class.getInterfaces(), h);

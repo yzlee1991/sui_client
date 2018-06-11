@@ -3,6 +3,7 @@ package com.lzy.sui.client.fx.controller;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -21,6 +22,7 @@ import com.lzy.sui.client.model.TreeEntity;
 import com.lzy.sui.client.model.TreeEntity.TYPE;
 import com.lzy.sui.common.abs.Filter;
 import com.lzy.sui.common.inf.FileInf;
+import com.lzy.sui.common.inf.HostInf;
 import com.lzy.sui.common.model.ProtocolEntity;
 import com.lzy.sui.common.model.TreeFileList;
 import com.lzy.sui.common.model.push.HostEntity;
@@ -28,6 +30,7 @@ import com.lzy.sui.common.model.push.HostOnlineEvent;
 import com.lzy.sui.common.model.push.HostOutlineEvent;
 import com.lzy.sui.common.model.push.PushEvent;
 import com.lzy.sui.common.proxy.CommonRequestSocketHandle;
+import com.lzy.sui.common.rmi.RmiClient;
 import com.lzy.sui.common.service.FileService;
 
 import javafx.collections.FXCollections;
@@ -104,18 +107,17 @@ public class HomeController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		System.out.println("HomeController 初始化。。。。。");
-		initTree();
+		try {
+			initTree();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		initTable();
 		registerPushListener();
 	}
 
-	private void initTree() {
-		// 设置根节点
-		TreeEntity root = new TreeEntity();
-		root.setType(TreeEntity.TYPE.ROOT);
-		root.setName("小僵尸");
-		tree.setRoot(new TreeItem<TreeEntity>(root));
-
+	private void initTree() throws IOException {
+		initTreeData();
 		// 设置工厂格式
 		tree.setCellFactory(new Callback<TreeView<TreeEntity>, TreeCell<TreeEntity>>() {
 			@Override
@@ -216,7 +218,6 @@ public class HomeController implements Initializable {
 								}
 								
 								protected void succeeded() {
-									System.out.println("----------213123->>>完成");
 									try {
 										List<TreeFileList> list = get();
 										List<TreeItem<TreeEntity>> itemList = new ArrayList<TreeItem<TreeEntity>>();
@@ -225,7 +226,6 @@ public class HomeController implements Initializable {
 										}
 										selectItem.getChildren().clear();
 										selectItem.getChildren().addAll(itemList);
-										System.out.println("----------->>>完成");
 										waitStage.close();
 									} catch (InterruptedException | ExecutionException e) {
 										e.printStackTrace();
@@ -311,6 +311,31 @@ public class HomeController implements Initializable {
 		});
 	}
 
+	//初始化树的数据
+	private void initTreeData() throws IOException{
+		// 设置根节点
+		TreeEntity root = new TreeEntity();
+		root.setType(TreeEntity.TYPE.ROOT);
+		root.setName("小僵尸");
+		tree.setRoot(new TreeItem<TreeEntity>(root));
+
+		// 获取当前在线用户并设置节点
+		HostInf inf=(HostInf) RmiClient.lookup(Client.newInstance().getSocket(), HostInf.class.getName());
+		List<HostEntity> list=inf.getOnlineHostEntity();
+		if(list==null||list.size()==0){
+			return;
+		}
+		for(HostEntity he:list){
+			TreeEntity treeEntity = new TreeEntity();
+			treeEntity.setName(he.getName());
+			treeEntity.setIdentityId(he.getIdentityId());
+			treeEntity.setIdentity(he.getIdentity());
+			treeEntity.setType(TreeEntity.TYPE.HOST);
+			tree.getRoot().getChildren().add(new TreeItem<TreeEntity>(treeEntity));
+		}
+		
+	}
+	
 	private void initTable() {
 		src.setCellValueFactory(new PropertyValueFactory<TableTask, String>("src"));
 		fileName.setCellValueFactory(new PropertyValueFactory<TableTask, String>("fileName"));
