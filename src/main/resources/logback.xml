@@ -20,6 +20,7 @@
 
 	<!-- 日志输出级别 -->
 	<root level="INFO,ERROR">
+		<appender-ref ref="STDOUT" />
 		<appender-ref ref="FILE" />
 	</root>
 	<logger name="org.springframework" level="INFO" />

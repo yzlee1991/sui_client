@@ -50,7 +50,7 @@ public class Client {
 
 	private int delayTime = 100;
 
-	private long headTime = 1500;
+	private long headTime = 15000;
 
 	private long lastTime = clock.now();
 
