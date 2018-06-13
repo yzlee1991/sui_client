@@ -79,7 +79,9 @@ public class Client {
 		System.out.println("启动服务...");
 		try {
 			// 1.连接服务器请求登陆
-			socket = new Socket("127.0.0.1", 12345);
+			socket = new Socket("127.0.0.1", 8080);
+//			socket = new Socket("192.168.0.110", 12345);
+//			socket = new Socket("crazydota.51vip.biz", 16106);
 			// 2.登陆
 			login(socket, userName, passWord);
 			// 3.登陆成功后发送心跳包（之后可以改成定时器的第三方类，看情况）
@@ -140,7 +142,7 @@ public class Client {
 			return;
 		}
 		try {
-			String scanPath = this.getClass().getResource("").getPath() + "filter";
+			String scanPath = this.getClass().getResource("").toURI().getPath() + "filter";
 			Filter filter = null;
 			String packName = this.getClass().getPackage().getName() + ".filter.";
 			File file = new File(scanPath);
